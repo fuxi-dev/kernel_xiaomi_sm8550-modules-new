@@ -13,6 +13,13 @@
 #define CAM_SENSOR_PINCTRL_STATE_SLEEP "cam_suspend"
 #define CAM_SENSOR_PINCTRL_STATE_DEFAULT "cam_default"
 
+#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+/*add by xiaomi*/
+#define CAM_SENSOR_VERSION_PINCTRL_STATE_SLEEP "cam_version_suspend"
+#define CAM_SENSOR_VERSION_PINCTRL_STATE_DEFAULT "cam_version_default"
+/*end by xiaomi*/
+#endif
+
 #define VALIDATE_VOLTAGE(min, max, config_val) ((config_val) && \
 	(config_val >= min) && (config_val <= max))
 
@@ -1252,6 +1259,55 @@ int32_t msm_camera_fill_vreg_params(
 			if (j == num_vreg)
 				power_setting[i].seq_val = INVALID_VREG;
 			break;
+		#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+		/* xiaomi add begin*/
+		case SENSOR_BOB:
+			for (j = 0; j < num_vreg; j++) {
+
+				if (!strcmp(soc_info->rgltr_name[j],
+					"cam_bob")) {
+					CAM_DBG(CAM_SENSOR,
+						"bob i:%d j:%d cam_bob", i, j);
+					power_setting[i].seq_val = j;
+
+					if (VALIDATE_VOLTAGE(
+						soc_info->rgltr_min_volt[j],
+						soc_info->rgltr_max_volt[j],
+						power_setting[i].config_val)) {
+						soc_info->rgltr_min_volt[j] =
+						soc_info->rgltr_max_volt[j] =
+						power_setting[i].config_val;
+					}
+					break;
+				}
+			}
+			if (j == num_vreg)
+				power_setting[i].seq_val = INVALID_VREG;
+			break;
+		case SENSOR_BOB2:
+			for (j = 0; j < num_vreg; j++) {
+
+				if (!strcmp(soc_info->rgltr_name[j],
+					"cam_bob2")) {
+					CAM_DBG(CAM_SENSOR,
+						"bob2 i:%d j:%d cam_bob2", i, j);
+					power_setting[i].seq_val = j;
+
+					if (VALIDATE_VOLTAGE(
+						soc_info->rgltr_min_volt[j],
+						soc_info->rgltr_max_volt[j],
+						power_setting[i].config_val)) {
+						soc_info->rgltr_min_volt[j] =
+						soc_info->rgltr_max_volt[j] =
+						power_setting[i].config_val;
+					}
+					break;
+				}
+			}
+			if (j == num_vreg)
+				power_setting[i].seq_val = INVALID_VREG;
+			break;
+			#endif
 		default:
 			break;
 		}
@@ -2236,6 +2292,12 @@ int cam_sensor_core_power_up(struct cam_sensor_power_ctrl_t *ctrl,
 		case SENSOR_VAF_PWDM:
 		case SENSOR_CUSTOM_REG1:
 		case SENSOR_CUSTOM_REG2:
+        #if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+            /* Xiaomi add begin */
+            case SENSOR_BOB:
+            case SENSOR_BOB2:
+            /* Xiaomi add end */
+        #endif
 			if (power_setting->seq_val == INVALID_VREG)
 				break;
 
@@ -2362,6 +2424,12 @@ power_up_failed:
 		case SENSOR_VAF_PWDM:
 		case SENSOR_CUSTOM_REG1:
 		case SENSOR_CUSTOM_REG2:
+        #if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+            /* Xiaomi add begin */
+            case SENSOR_BOB:
+            case SENSOR_BOB2:
+            /* Xiaomi add end */
+        #endif
 			if (power_setting->seq_val < num_vreg) {
 				CAM_DBG(CAM_SENSOR, "Disable Regulator");
 				vreg_idx = power_setting->seq_val;
@@ -2521,6 +2589,12 @@ int cam_sensor_util_power_down(struct cam_sensor_power_ctrl_t *ctrl,
 		case SENSOR_VAF_PWDM:
 		case SENSOR_CUSTOM_REG1:
 		case SENSOR_CUSTOM_REG2:
+        #if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+            /* Xiaomi add begin */
+            case SENSOR_BOB:
+            case SENSOR_BOB2:
+            /* Xiaomi add end */
+        #endif
 			if (pd->seq_val == INVALID_VREG)
 				break;
 
