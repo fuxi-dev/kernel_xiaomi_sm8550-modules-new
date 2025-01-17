@@ -35,7 +35,11 @@
 #define CAM_IFE_CSID_TIMEOUT_SLEEP_US                  1000
 #define CAM_IFE_CSID_TIMEOUT_ALL_US                    100000
 
+#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
+#define CAM_IFE_CSID_RESET_TIMEOUT_MS                  200
+#else
 #define CAM_IFE_CSID_RESET_TIMEOUT_MS                  100
+#endif
 
 /*
  * Constant Factors needed to change QTimer ticks to nanoseconds
