@@ -38,6 +38,8 @@
 
 #define MAX_SYSTEM_PIPELINE_DELAY 2
 
+#define CAM_FRAME_SKIP_OPCODE 126
+
 #define CAM_PKT_NOP_OPCODE 127
 
 enum camera_flash_opcode {
@@ -111,12 +113,10 @@ enum msm_camera_power_seq_type {
 	SENSOR_CUSTOM_GPIO1,
 	SENSOR_CUSTOM_GPIO2,
 	SENSOR_VANA1,
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
 /* xiaomi add begin*/
 	SENSOR_BOB,
 	SENSOR_BOB2,
 /* xiaomi add end*/
-	#endif
 	SENSOR_SEQ_TYPE_MAX,
 };
 
@@ -252,12 +252,10 @@ struct i2c_data_settings {
 	struct i2c_settings_array read_settings;
 	struct i2c_settings_array *per_frame;
 	struct i2c_settings_array *frame_skip;
-	struct i2c_settings_array *bubble_update;
 	struct i2c_settings_array reg_bank_unlock_settings;
 	struct i2c_settings_array reg_bank_lock_settings;
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
 	struct i2c_settings_array parklens_settings; //xiaomi add
-	#endif
+	struct i2c_settings_array write_settings; //xiaomi add
 };
 
 struct cam_sensor_power_ctrl_t {
@@ -342,13 +340,11 @@ enum msm_camera_vreg_name_t {
 	CAM_VDIG,
 	CAM_VIO,
 	CAM_VANA,
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
 /* xiaomi add begin*/
 	CAM_VANA1,
 	CAM_BOB,
 	CAM_BOB2,
 /* xiaomi add end*/
-	#endif
 	CAM_VAF,
 	CAM_V_CUSTOM1,
 	CAM_V_CUSTOM2,
