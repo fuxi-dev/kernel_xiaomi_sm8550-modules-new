@@ -2203,13 +2203,16 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 		}
 
 		// xiaomi change begin
-		// rc = cam_sensor_i2c_read_data(
-		//	&i2c_read_settings,
-		//	&o_ctrl->io_master_info);
+		#ifdef CONFIG_TARGET_PRODUCT_FUXI
+		rc = cam_sensor_i2c_read_data( // fuxi and nuwa ois sensors data are read-only
+			&i2c_read_settings,
+			&o_ctrl->io_master_info);
+		#else
 		rc = cam_sensor_i2c_read_write_ois_data(
 			&i2c_read_settings,
 			&o_ctrl->io_master_info);
 		// xiaomi change end
+		#endif
 
 		if (rc < 0) {
 			CAM_ERR(CAM_OIS, "cannot read data rc: %d", rc);
