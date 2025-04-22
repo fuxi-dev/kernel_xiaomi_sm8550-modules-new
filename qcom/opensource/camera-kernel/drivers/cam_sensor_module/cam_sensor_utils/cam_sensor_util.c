@@ -13,13 +13,6 @@
 #define CAM_SENSOR_PINCTRL_STATE_SLEEP "cam_suspend"
 #define CAM_SENSOR_PINCTRL_STATE_DEFAULT "cam_default"
 
-#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-/*add by xiaomi*/
-#define CAM_SENSOR_VERSION_PINCTRL_STATE_SLEEP "cam_version_suspend"
-#define CAM_SENSOR_VERSION_PINCTRL_STATE_DEFAULT "cam_version_default"
-/*end by xiaomi*/
-#endif
-
 #define VALIDATE_VOLTAGE(min, max, config_val) ((config_val) && \
 	(config_val >= min) && (config_val <= max))
 

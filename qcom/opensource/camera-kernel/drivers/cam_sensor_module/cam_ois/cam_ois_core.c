@@ -113,15 +113,6 @@ static int cam_ois_power_up(struct cam_ois_ctrl_t *o_ctrl)
 	struct cam_ois_soc_private             *soc_private;
 	struct cam_sensor_power_ctrl_t         *power_info;
 	struct completion                      *i3c_probe_completion = NULL;
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	struct timespec64                       ts1, ts2; // xiaomi add
-	long                                    microsec = 0; // xiaomi add
-
-	/* xiaomi add begin */
-	CAM_GET_TIMESTAMP(ts1);
-	CAM_DBG(CAM_OIS, "%s start power_up", o_ctrl->ois_name);
-	/* xiaomi add end */
-	#endif
 
 	soc_private = (struct cam_ois_soc_private *)o_ctrl->soc_info.soc_private;
 	power_info = &soc_private->power_info;
@@ -176,14 +167,6 @@ static int cam_ois_power_up(struct cam_ois_ctrl_t *o_ctrl)
 		CAM_ERR(CAM_OIS, "cci_init failed: rc: %d", rc);
 		goto cci_failure;
 	}
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	/* xiaomi add begin */
-	CAM_GET_TIMESTAMP(ts2);
-	CAM_GET_TIMESTAMP_DIFF_IN_MICRO(ts1, ts2, microsec);
-	CAM_DBG(CAM_OIS, "%s end power_up, occupy time is: %ld ms",
-		o_ctrl->ois_name, microsec/1000);
-	/* xiaomi add end */
-	#endif
 
 	return rc;
 cci_failure:
@@ -206,15 +189,6 @@ static int cam_ois_power_down(struct cam_ois_ctrl_t *o_ctrl)
 	struct cam_hw_soc_info          *soc_info =
 		&o_ctrl->soc_info;
 	struct cam_ois_soc_private *soc_private;
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	struct timespec64               ts1, ts2; // xiaomi add
-	long                            microsec = 0; // xiaomi add
-
-	/* xiaomi add begin */
-	CAM_GET_TIMESTAMP(ts1);
-	CAM_DBG(CAM_OIS, "%s start power_down", o_ctrl->ois_name);
-	/* xiaomi add end */
-	#endif
 
 	if (!o_ctrl) {
 		CAM_ERR(CAM_OIS, "failed: o_ctrl %pK", o_ctrl);
@@ -239,15 +213,6 @@ static int cam_ois_power_down(struct cam_ois_ctrl_t *o_ctrl)
 
 	camera_io_release(&o_ctrl->io_master_info);
 	o_ctrl->cam_ois_state = CAM_OIS_ACQUIRE;
-
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	/* xiaomi add begin */
-	CAM_GET_TIMESTAMP(ts2);
-	CAM_GET_TIMESTAMP_DIFF_IN_MICRO(ts1, ts2, microsec);
-	CAM_DBG(CAM_OIS, "%s end power_down, occupy time is: %ld ms",
-		o_ctrl->ois_name, microsec/1000);
-	/* xiaomi add end */
-	#endif
 
 	return rc;
 }
@@ -656,11 +621,7 @@ release_firmware:
 static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 {
 	int32_t                         rc = 0;
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	int32_t                         i = 0, j =0;
-	#else
 	int32_t                         i = 0;
-	#endif
 	uint32_t                        total_cmd_buf_in_bytes = 0;
 	struct common_header           *cmm_hdr = NULL;
 	uintptr_t                       generic_ptr;
@@ -679,12 +640,6 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 		(struct cam_ois_soc_private *)o_ctrl->soc_info.soc_private;
 	struct cam_sensor_power_ctrl_t  *power_info = &soc_private->power_info;
 	size_t                           packet_size = 0;
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-	const struct flash_ois_function *ps = pflash_ois;
-	uint8_t                          config_flag = 0;
-	struct timespec64                ts1, ts2; // xiaomi add
-	long                             microsec = 0; // xiaomi add
-	#endif
 
 	ioctl_ctrl = (struct cam_control *)arg;
 	if (copy_from_user(&dev_config,
@@ -875,25 +830,6 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 			}
 		}
 
-	#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-		//interface for different ois add by xiaomi
-		if ( o_ctrl->opcode.customized_ois_flag ) {
-			for(j = 0; j < sizeof(pflash_ois) / sizeof(struct flash_ois_function) ; j++)
-			{
-				if(ps[j].flag == o_ctrl->opcode.customized_ois_flag){
-					config_flag++;
-					rc = ps[j].mi_ois_pkt_download(o_ctrl);
-					if (rc) {
-						CAM_ERR(CAM_OIS, "Failed OIS Customer Pkt Download");
-						goto pwr_dwn;
-					}
-				}
-			}
-			if ( config_flag != 1 ) {
-				CAM_ERR(CAM_OIS, "ERROR! need  pkt function or repeat flag , flag  %d", config_flag);
-			}
-		}
-	#endif
 		if (o_ctrl->i2c_fwinit_data.is_settings_valid == 1) {
 			rc = cam_ois_apply_settings(o_ctrl,
 				&o_ctrl->i2c_fwinit_data);
@@ -916,26 +852,11 @@ static int cam_ois_pkt_parse(struct cam_ois_ctrl_t *o_ctrl, void *arg)
 		}
 
 		if (o_ctrl->ois_fw_flag) {
-		#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-				/* xiaomi add begin */
-				CAM_GET_TIMESTAMP(ts1);
-				CAM_DBG(CAM_PERF, "%s start firmware download", o_ctrl->ois_name);
-				/* xiaomi add end */
-		#endif
-
 			rc = cam_ois_fw_download(o_ctrl);
 			if (rc) {
 				CAM_ERR(CAM_OIS, "Failed OIS FW Download");
 				goto pwr_dwn;
 			}
-		#if defined(CONFIG_TARGET_PRODUCT_FUXI) || defined(CONFIG_TARGET_PRODUCT_NUWA)
-				/* xiaomi add begin */
-				CAM_GET_TIMESTAMP(ts2);
-				CAM_GET_TIMESTAMP_DIFF_IN_MICRO(ts1, ts2, microsec);
-				CAM_DBG(CAM_PERF, "%s end firmware download, occupy time is: %ld ms",
-					o_ctrl->ois_name, microsec/1000);
-				/* xiaomi add end */
-		#endif
 		}
 
 		rc = cam_ois_apply_settings(o_ctrl, &o_ctrl->i2c_init_data);
